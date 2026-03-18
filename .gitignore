@@ -1,2 +1,8 @@
 /vincxr
 /checkpoints
+/artifacts
+/work_dirs
+__pycache__/
+*.pyc
+/AGENTS.md
+/training_recipe.md
