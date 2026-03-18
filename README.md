@@ -19,7 +19,7 @@ Use Python 3.10 or 3.11 with a wheel-supported PyTorch/CUDA pair. Current Colab 
 pip install -U pip setuptools wheel packaging
 pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0
 pip install "mmengine>=0.10.0,<1.0.0" pycocotools
-pip install "mmcv>=2.0.0,<2.2.0" -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.3.0/index.html
+pip install --only-binary=mmcv "mmcv==2.1.0" -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.3.0/index.html
 pip install "mmdet>=3.2.0,<3.4.0"
 ```
 
