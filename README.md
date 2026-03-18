@@ -13,13 +13,13 @@ This repository now contains a local MMDetection project for VinDr-CXR lesion de
 
 ## Install
 
-Use Python 3.10 or 3.11 with a wheel-supported PyTorch/CUDA pair. Current Colab Python 3.12 + Torch 2.10 / CUDA 12.8 runtimes are too new for the prebuilt MMCV wheels used by MMDetection 3.x.
+Use Python 3.10 or 3.11 with a wheel-supported PyTorch/CUDA pair. Current Colab Python 3.12 + Torch 2.10 / CUDA 12.8 runtimes are too new for the prebuilt MMCV wheels used by MMDetection 3.x. A known-good combo for this project is `torch 2.1.0 + cu121 + mmcv 2.1.0`.
 
 ```bash
 pip install -U pip setuptools wheel packaging
-pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0
+pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0
 pip install "mmengine>=0.10.0,<1.0.0" pycocotools
-pip install --only-binary=mmcv "mmcv==2.1.0" -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.3.0/index.html
+pip install --only-binary=mmcv "mmcv==2.1.0" -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1.0/index.html
 pip install "mmdet>=3.2.0,<3.4.0"
 ```
 
