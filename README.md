@@ -13,21 +13,13 @@ This repository now contains a local MMDetection project for VinDr-CXR lesion de
 
 ## Install
 
-Install a CUDA-matched PyTorch first, then install the MMDetection stack. Do not use `openmim` on current Colab Python 3.12 runtimes.
+Use Python 3.10 or 3.11 with a wheel-supported PyTorch/CUDA pair. Current Colab Python 3.12 + Torch 2.10 / CUDA 12.8 runtimes are too new for the prebuilt MMCV wheels used by MMDetection 3.x.
 
 ```bash
-MMCV_INDEX=$(python - <<'PY'
-import torch
-torch_ver = '.'.join(torch.__version__.split('+')[0].split('.')[:2]) + '.0'
-cuda_ver = torch.version.cuda.replace('.', '')
-print(f'https://download.openmmlab.com/mmcv/dist/cu{cuda_ver}/torch{torch_ver}/index.html')
-PY
-)
-
 pip install -U pip setuptools wheel packaging
-pip install -U "requests==2.32.4" "urllib3>=2,<3" "pillow<12" "tqdm>=4.67.1" "rich>=13.7.1" "filelock>=3.15" "jedi>=0.19"
+pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0
 pip install "mmengine>=0.10.0,<1.0.0" pycocotools
-pip install "mmcv>=2.0.0,<2.2.0" -f "$MMCV_INDEX"
+pip install "mmcv>=2.0.0,<2.2.0" -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.3.0/index.html
 pip install "mmdet>=3.2.0,<3.4.0"
 ```
 
@@ -99,4 +91,4 @@ Outputs are written under `artifacts/visualizations/<split>/`.
 
 ## Google Colab
 
-A Colab notebook is available at `colab_vindr_dino_swinl.ipynb`. It mounts Google Drive, installs dependencies without `openmim`, prepares annotations, visualizes samples, trains, resumes, and evaluates from notebook cells.
+A Colab notebook is available at `colab_vindr_dino_swinl.ipynb`. It mounts Google Drive, creates an isolated `micromamba` Python 3.10 environment, installs a wheel-supported Torch/MMCV/MMDetection stack, then prepares annotations, visualizes samples, trains, resumes, and evaluates from notebook cells.
