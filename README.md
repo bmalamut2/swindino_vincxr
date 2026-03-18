@@ -60,8 +60,8 @@ python scripts/train_vindr.py configs/vindr_dino_swinl_36e.py --work-dir work_di
 ## Evaluate
 
 ```bash
-python scripts/eval_vindr.py configs/vindr_dino_swinl_36e.py work_dirs/vindr_dino_swinl_36e/best_coco_bbox_mAP.pth --split val
-python scripts/eval_vindr.py configs/vindr_dino_swinl_36e.py work_dirs/vindr_dino_swinl_36e/best_coco_bbox_mAP.pth --split test
+python scripts/eval_vindr.py configs/vindr_dino_swinl_36e.py work_dirs/vindr_dino_swinl_36e/best_coco_bbox_mAP_epoch_XX.pth --split val
+python scripts/eval_vindr.py configs/vindr_dino_swinl_36e.py work_dirs/vindr_dino_swinl_36e/best_coco_bbox_mAP_epoch_XX.pth --split test
 ```
 
 Custom metrics are reported as:
@@ -86,3 +86,7 @@ python scripts/visualize_vindr_sample.py --split train --image-id 000434271f63a0
 ```
 
 Outputs are written under `artifacts/visualizations/<split>/`.
+
+## Google Colab
+
+A Colab notebook is available at `colab_vindr_dino_swinl.ipynb`. It mounts Google Drive, installs dependencies, prepares annotations, visualizes samples, trains, resumes, and evaluates from notebook cells.
