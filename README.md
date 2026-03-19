@@ -27,12 +27,12 @@ This environment uses `conda-forge` for the base packages and installs the CUDA 
 If an existing environment drifts to `numpy 2.x`, repair it before training:
 
 ```bash
-pip install --force-reinstall "numpy==1.26.4"
+pip install --force-reinstall "numpy==1.26.4" "opencv-python==4.11.0.86"
 ```
 
 ```bash
 pip install -U pip setuptools wheel packaging
-pip install --force-reinstall "numpy==1.26.4"
+pip install --force-reinstall "numpy==1.26.4" "opencv-python==4.11.0.86"
 pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0
 pip install "mmengine>=0.10.0,<1.0.0" pycocotools
 pip install --only-binary=mmcv "mmcv==2.1.0" -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1.0/index.html
@@ -104,6 +104,22 @@ python scripts/visualize_vindr_sample.py --split train --image-id 000434271f63a0
 ```
 
 Outputs are written under `artifacts/visualizations/<split>/`.
+
+## HPC Runtime Note
+
+On some clusters, the job environment injects an older system `libstdc++.so.6` ahead of the active Conda environment. When that happens, imports can fail with errors like `GLIBCXX_3.4.29 not found` from Pillow or MMCV.
+
+With the `vindr-dino` environment activated, run training or evaluation through the wrapper in [scripts/with_conda_libs.sh](/home/bmalamut/Desktop/swindino_vincxr/scripts/with_conda_libs.sh):
+
+```bash
+bash scripts/with_conda_libs.sh python scripts/train_vindr.py configs/vindr_dino_swinl_36e.py --work-dir work_dirs/vindr_dino_swinl_36e
+```
+
+If you prefer to run commands directly, prepend the Conda lib directory yourself:
+
+```bash
+export LD_LIBRARY_PATH="$CONDA_PREFIX/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+```
 
 ## Google Colab
 
