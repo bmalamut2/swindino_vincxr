@@ -15,6 +15,15 @@ This repository now contains a local MMDetection project for VinDr-CXR lesion de
 
 Use Python 3.10 or 3.11 with a wheel-supported PyTorch/CUDA pair. Current Colab Python 3.12 + Torch 2.10 / CUDA 12.8 runtimes are too new for the prebuilt MMCV wheels used by MMDetection 3.x. A known-good combo for this project is `torch 2.1.0 + cu121 + mmcv 2.1.0`.
 
+Preferred local setup, using the pinned Conda environment in [environment.yml](/home/bmalamut/Desktop/swindino_vincxr/environment.yml):
+
+```bash
+conda env create -f environment.yml
+conda activate vindr-dino
+```
+
+This environment uses `conda-forge` for the base packages and installs the CUDA 12.1 PyTorch/MMCV wheel set through `pip`, so it assumes an NVIDIA driver new enough for CUDA 12.1.
+
 ```bash
 pip install -U pip setuptools wheel packaging
 pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0

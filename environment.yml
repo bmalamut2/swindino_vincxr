@@ -1,0 +1,26 @@
+name: vindr-dino
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip>=24
+  - setuptools>=69
+  - wheel
+  - packaging
+  - numpy>=1.26,<2.0
+  - pillow>=10,<11
+  - pycocotools
+  - tqdm
+  - rich>=13,<14
+  - ipykernel
+  - jupyterlab
+  - pip:
+      - --extra-index-url https://download.pytorch.org/whl/cu121
+      - torch==2.1.0
+      - torchvision==0.16.0
+      - torchaudio==2.1.0
+      - mmengine>=0.10.0,<1.0.0
+      - --find-links https://download.openmmlab.com/mmcv/dist/cu121/torch2.1.0/index.html
+      - --only-binary=mmcv
+      - mmcv==2.1.0
+      - mmdet>=3.2.0,<3.4.0
