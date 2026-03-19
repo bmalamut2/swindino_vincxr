@@ -4,7 +4,7 @@ channels:
 dependencies:
   - python=3.10
   - pip>=24
-  - setuptools>=69
+  - setuptools>=69,<81
   - wheel
   - packaging
   - numpy=1.26.4

@@ -10,6 +10,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
+from vindr_detector.compat import ensure_pkg_resources
+
+ensure_pkg_resources()
+
 from mmengine.config import Config, DictAction
 from mmengine.runner import Runner
 
@@ -83,4 +87,3 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
-

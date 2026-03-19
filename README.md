@@ -30,9 +30,16 @@ If an existing environment drifts to `numpy 2.x`, repair it before training:
 pip install --force-reinstall "numpy==1.26.4" "opencv-python==4.11.0.86"
 ```
 
+If `mmengine` fails with `ModuleNotFoundError: No module named 'pkg_resources'`, repair the env with:
+
+```bash
+pip install --force-reinstall "setuptools<81"
+```
+
 ```bash
 pip install -U pip setuptools wheel packaging
 pip install --force-reinstall "numpy==1.26.4" "opencv-python==4.11.0.86"
+pip install --force-reinstall "setuptools<81"
 pip install --index-url https://download.pytorch.org/whl/cu121 torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0
 pip install "mmengine>=0.10.0,<1.0.0" pycocotools
 pip install --only-binary=mmcv "mmcv==2.1.0" -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.1.0/index.html
