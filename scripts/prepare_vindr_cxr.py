@@ -70,12 +70,27 @@ def pairwise_iou(box_a: tuple[float, float, float, float],
     return inter / denom
 
 
-def connected_components(boxes: list[tuple[float, float, float, float]],
-                         iou_thr: float) -> list[list[int]]:
+def pairwise_ioa(box_a: tuple[float, float, float, float],
+                 box_b: tuple[float, float, float, float]) -> float:
+    x1 = max(box_a[0], box_b[0])
+    y1 = max(box_a[1], box_b[1])
+    x2 = min(box_a[2], box_b[2])
+    y2 = min(box_a[3], box_b[3])
+    inter_w = max(0.0, x2 - x1)
+    inter_h = max(0.0, y2 - y1)
+    inter = inter_w * inter_h
+    area_a = max(0.0, box_a[2] - box_a[0]) * max(0.0, box_a[3] - box_a[1])
+    return inter / max(area_a, 1e-12)
+
+
+def connected_components(
+    boxes: list[tuple[float, float, float, float]],
+    link_fn,
+) -> list[list[int]]:
     neighbors: list[list[int]] = [[] for _ in boxes]
     for left in range(len(boxes)):
         for right in range(left + 1, len(boxes)):
-            if pairwise_iou(boxes[left], boxes[right]) >= iou_thr:
+            if link_fn(boxes[left], boxes[right]):
                 neighbors[left].append(right)
                 neighbors[right].append(left)
 
@@ -168,7 +183,10 @@ def merge_reader_boxes(grouped_boxes: dict[str, list[BoxRecord]], iou_thr: float
 
         merged_records: list[BoxRecord] = []
         for class_name, class_boxes in per_class.items():
-            components = connected_components(class_boxes, iou_thr)
+            components = connected_components(
+                class_boxes,
+                lambda left, right: pairwise_iou(left, right) >= iou_thr,
+            )
             for component in components:
                 support_hist[len(component)] += 1
                 x1 = median(class_boxes[idx][0] for idx in component)
@@ -195,6 +213,61 @@ def merge_reader_boxes(grouped_boxes: dict[str, list[BoxRecord]], iou_thr: float
             class_name: len(class_image_count[class_name])
             for class_name in LOCAL_CLASSES
         },
+    }
+
+
+def dedup_same_class_boxes(
+    grouped_boxes: dict[str, list[BoxRecord]],
+    dedup_iou_thr: float,
+    dedup_ioa_thr: float,
+) -> tuple[dict[str, list[BoxRecord]], dict]:
+    deduped_by_image: dict[str, list[BoxRecord]] = {}
+    before_count = 0
+    after_count = 0
+    component_hist = Counter()
+    merged_components = 0
+
+    def is_duplicate(left: tuple[float, float, float, float],
+                     right: tuple[float, float, float, float]) -> bool:
+        iou = pairwise_iou(left, right)
+        ioa = max(pairwise_ioa(left, right), pairwise_ioa(right, left))
+        return iou >= dedup_iou_thr or ioa >= dedup_ioa_thr
+
+    for image_id, records in grouped_boxes.items():
+        per_class: dict[str, list[BoxRecord]] = defaultdict(list)
+        for record in records:
+            per_class[record.class_name].append(record)
+
+        deduped_records: list[BoxRecord] = []
+        for class_name, class_records in per_class.items():
+            class_boxes = [record.bbox for record in class_records]
+            before_count += len(class_records)
+            components = connected_components(class_boxes, is_duplicate)
+            after_count += len(components)
+
+            for component in components:
+                component_hist[len(component)] += 1
+                if len(component) > 1:
+                    merged_components += 1
+                x1 = median(class_boxes[idx][0] for idx in component)
+                y1 = median(class_boxes[idx][1] for idx in component)
+                x2 = median(class_boxes[idx][2] for idx in component)
+                y2 = median(class_boxes[idx][3] for idx in component)
+                deduped_records.append(
+                    BoxRecord(
+                        image_id=image_id,
+                        class_name=class_name,
+                        bbox=(x1, y1, x2, y2),
+                        support=sum(class_records[idx].support for idx in component),
+                    ))
+        deduped_by_image[image_id] = deduped_records
+
+    return deduped_by_image, {
+        'dedup_input_box_count': before_count,
+        'deduped_box_count': after_count,
+        'dedup_ratio': after_count / max(before_count, 1),
+        'dedup_component_hist': dict(sorted(component_hist.items())),
+        'dedup_merged_components': merged_components,
     }
 
 
@@ -286,6 +359,8 @@ def main() -> None:
     parser.add_argument('--repo-root', type=Path, default=Path('.'))
     parser.add_argument('--output-dir', type=Path, default=Path('artifacts/vindr_cxr'))
     parser.add_argument('--merge-iou', type=float, default=0.5)
+    parser.add_argument('--dedup-iou', type=float, default=0.6)
+    parser.add_argument('--dedup-ioa', type=float, default=0.85)
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -302,6 +377,11 @@ def main() -> None:
 
     raw_grouped, raw_stats = load_train_boxes(annotations_root / 'annotations_train.csv', train_image_dir)
     merged_grouped, merge_stats = merge_reader_boxes(raw_grouped, args.merge_iou)
+    deduped_grouped, dedup_stats = dedup_same_class_boxes(
+        merged_grouped,
+        dedup_iou_thr=args.dedup_iou,
+        dedup_ioa_thr=args.dedup_ioa,
+    )
 
     image_sizes = raw_stats['image_sizes']
     train_ids = sorted(train_split_ids)
@@ -313,8 +393,8 @@ def main() -> None:
 
     test_grouped, test_sizes = load_test_boxes(annotations_root / 'annotations_test.csv', test_image_dir)
 
-    train_coco, train_stats = build_coco_dataset(train_ids, train_image_dir, image_sizes, merged_grouped)
-    val_coco, val_stats = build_coco_dataset(val_ids, train_image_dir, image_sizes, merged_grouped)
+    train_coco, train_stats = build_coco_dataset(train_ids, train_image_dir, image_sizes, deduped_grouped)
+    val_coco, val_stats = build_coco_dataset(val_ids, train_image_dir, image_sizes, deduped_grouped)
     test_coco, test_stats = build_coco_dataset(test_ids, test_image_dir, test_sizes, test_grouped)
 
     write_json(output_ann_root / 'train.json', train_coco)
@@ -336,6 +416,11 @@ def main() -> None:
             'merged_box_count': merge_stats['merged_box_count'],
             'merge_ratio': merge_stats['merge_ratio'],
             'cluster_support_hist': merge_stats['cluster_support_hist'],
+            'dedup_input_box_count': dedup_stats['dedup_input_box_count'],
+            'deduped_box_count': dedup_stats['deduped_box_count'],
+            'dedup_ratio': dedup_stats['dedup_ratio'],
+            'dedup_component_hist': dedup_stats['dedup_component_hist'],
+            'dedup_merged_components': dedup_stats['dedup_merged_components'],
             'class_image_count': merge_stats['class_image_count'],
             'dropped_invalid_boxes': raw_stats['dropped_invalid_boxes'],
         },
