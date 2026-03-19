@@ -54,7 +54,7 @@ train_pipeline = [
     dict(type='LoadAnnotations', with_bbox=True),
     dict(
         type='RandomChoiceResize',
-        scales=[(896, 896), (960, 960), (1024, 1024)],
+        scales=[(896, 896)],
         keep_ratio=True,
     ),
     dict(type='PackDetInputs'),
@@ -63,14 +63,14 @@ train_pipeline = [
 test_pipeline = [
     dict(type='LoadImageFromFile', color_type='grayscale'),
     dict(type='EnsureThreeChannelGray'),
-    dict(type='Resize', scale=(1024, 1024), keep_ratio=True),
+    dict(type='Resize', scale=(896, 896), keep_ratio=True),
     dict(type='LoadAnnotations', with_bbox=True),
     dict(type='PackDetInputs'),
 ]
 
 train_dataloader = dict(
     _delete_=True,
-    batch_size=3,
+    batch_size=8,
     num_workers=8,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -128,7 +128,7 @@ test_dataloader = dict(
 
 optim_wrapper = dict(
     type='AmpOptimWrapper',
-    accumulative_counts=5,
+    accumulative_counts=2,
     optimizer=dict(type='AdamW', lr=1e-4, weight_decay=1e-4),
     clip_grad=dict(max_norm=0.1, norm_type=2),
     paramwise_cfg=dict(custom_keys={'backbone': dict(lr_mult=0.1)}),
