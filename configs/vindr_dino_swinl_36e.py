@@ -76,7 +76,6 @@ train_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=True),
     batch_sampler=dict(type='AspectRatioBatchSampler'),
     dataset=dict(
-        _delete_=True,
         type='ClassBalancedDataset',
         oversample_thr=0.005,
         dataset=dict(
@@ -99,7 +98,6 @@ val_dataloader = dict(
     drop_last=False,
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
-        _delete_=True,
         type='CocoDataset',
         data_root=data_root,
         ann_file=val_ann_file,
@@ -118,7 +116,6 @@ test_dataloader = dict(
     drop_last=False,
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
-        _delete_=True,
         type='CocoDataset',
         data_root=data_root,
         ann_file=test_ann_file,
