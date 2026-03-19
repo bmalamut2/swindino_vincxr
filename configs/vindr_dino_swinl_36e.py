@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from vindr_detector.constants import LOCAL_CLASSES
-
 custom_imports = dict(
     imports=['vindr_detector.transforms', 'vindr_detector.metrics'],
     allow_failed_imports=False,
@@ -9,7 +7,30 @@ custom_imports = dict(
 
 _base_ = 'mmdet::dino/dino-5scale_swin-l_8xb2-36e_coco.py'
 
-classes = LOCAL_CLASSES
+classes = (
+    'Aortic enlargement',
+    'Atelectasis',
+    'Calcification',
+    'Cardiomegaly',
+    'Clavicle fracture',
+    'Consolidation',
+    'Edema',
+    'Emphysema',
+    'Enlarged PA',
+    'ILD',
+    'Infiltration',
+    'Lung Opacity',
+    'Lung cavity',
+    'Lung cyst',
+    'Mediastinal shift',
+    'Nodule/Mass',
+    'Other lesion',
+    'Pleural effusion',
+    'Pleural thickening',
+    'Pneumothorax',
+    'Pulmonary fibrosis',
+    'Rib fracture',
+)
 metainfo = dict(classes=classes)
 num_classes = len(classes)
 
